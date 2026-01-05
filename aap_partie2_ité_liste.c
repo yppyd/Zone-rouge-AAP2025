@@ -69,28 +69,8 @@ t_graph_l* creer_graphe_liste(int taille) {
   return g;
 }
 
-//format matrice d'adjacence
-typedef struct {
-  int size; // Taille
-  t_bool ** m; // Contenu
-} t_graph_m;
-
-t_graph_m* creer_graphe_matrice(int taille) {
-  int i;
-  t_graph_m* g = malloc(sizeof(t_graph_m));
-  assert(g != NULL);
-  g->size = taille;
-  g->m = malloc(g->size * sizeof(*(g->m)));
-  assert(g->m != NULL);
-  for (i=0;i<g->size;i++) {
-    g->m[i] = malloc(g->size * sizeof(*(g->m[i])));
-    assert(g->m[i] != NULL);
-  }
-  return g;
-}
-
 // TODO : prototypes //
-void recherche_iter(t_graph_l g, t_vertex x, t_vertex y); //Rq _m si format matrice 
+void recherche_iter(t_graph_l g, t_vertex x, t_vertex y); 
 
 //////// main ////////
 int main() {
@@ -227,7 +207,7 @@ t_node * list_cursor_next(t_node * lc) {
 // TODO : fonctions
 //Prog 2, itératif
 
-void recherche_iter(t_graph_l g, t_vertex x, t_vertex y) { //Rq _m si format matrice
+void recherche_iter(t_graph_l g, t_vertex x, t_vertex y) {
     t_vertex w;
     t_stack *stack_traversal = stack_new();
     t_stack *stack_path = stack_new();
@@ -256,12 +236,6 @@ void recherche_iter(t_graph_l g, t_vertex x, t_vertex y) { //Rq _m si format mat
                   stack_push(w, stack_traversal);
                   p = p->p_next;
                 }
-              //format matrice
-                //for (w = 0; w < g.size; w++) {
-                  //if (g.m[x][w]) {
-                  //  stack_push(w, stack_traversal);
-                  //}
-                //}
                 }
             }
         }
