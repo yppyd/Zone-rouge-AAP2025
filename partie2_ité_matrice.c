@@ -1,3 +1,5 @@
+//tt vient de "base_fil_rouge" sauf les lignes 47-68, 71, 194-fin
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -20,10 +22,7 @@ typedef t_node * t_list;
 // Pile (de sommets)
 typedef t_list t_stack;
 
-
-//////// Graphes ////////
-
-//////// Piles ////////
+//Prototypes Piles 
 void stack_show(t_stack * ps);
 t_stack * stack_new();
 int stack_is_empty(t_stack * ps);
@@ -31,7 +30,7 @@ void stack_push(t_vertex e, t_stack * ps);
 t_vertex stack_pop(t_stack * ps);
 t_vertex stack_top(t_stack * ps);
 
-//////// Listes chaînées ////////
+//Prototypes Listes chaînées
 t_list list_new();
 t_list list_add_head(t_vertex e, t_list l);
 int list_is_empty(t_list l);
@@ -71,15 +70,7 @@ t_graph_m* creer_graphe_matrice(int taille) {
 // TODO : prototypes //
 void recherche_iter(t_graph_m g, t_vertex x, t_vertex y); 
 
-//////// main ////////
-int main() {
-  printf("Hello world!\n");
-
-  return 0;
-}
-
-
-//////// Piles ////////
+//Fonction utiles (Piles)
 
 // Utilisation : t_stack * ps = stack_new();
 t_stack * stack_new() {
@@ -117,9 +108,7 @@ t_vertex stack_top(t_stack * ps) {
   return list_get_first_val(*ps);
 }
 
-
-
-//////// Listes chaînées ////////
+//Fonctions utiles(Listes chaînées)
 
 // Utilisation : t_list l = list_new();
 t_list list_new() {
@@ -202,10 +191,7 @@ t_node * list_cursor_next(t_node * lc) {
   return lc->p_next;    // Avance le curseur vers le maillon suivant
 }
 
-
-// TODO : fonctions
-//Prog 2, itératif
-
+//Programme
 void recherche_iter(t_graph_m g, t_vertex x, t_vertex y) {
     t_vertex w;
     t_stack *stack_traversal = stack_new();
