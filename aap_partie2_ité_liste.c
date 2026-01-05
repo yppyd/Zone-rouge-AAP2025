@@ -1,4 +1,4 @@
-//tout vient du fichier "base_fil_rouge" ; g codé entre les lignes 53-73, 75 et 210-fin
+//tout vient du fichier "base_fil_rouge" ; g codé entre les lignes 48-70, 73 et 198-fin
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,9 +23,7 @@ typedef t_node * t_list;
 typedef t_list t_stack;
 
 
-//////// Graphes ////////
-
-//////// Prototypes Piles ////////
+// Prototypes Piles
 void stack_show(t_stack * ps);
 t_stack * stack_new();
 int stack_is_empty(t_stack * ps);
@@ -33,7 +31,7 @@ void stack_push(t_vertex e, t_stack * ps);
 t_vertex stack_pop(t_stack * ps);
 t_vertex stack_top(t_stack * ps);
 
-//////// Prototypes Listes chaînées ////////
+// Prototypes Listes chaînées
 t_list list_new();
 t_list list_add_head(t_vertex e, t_list l);
 int list_is_empty(t_list l);
@@ -74,15 +72,7 @@ t_graph_l* creer_graphe_liste(int taille) {
 //prototypes fonction à coder
 void recherche_iter(t_graph_l g, t_vertex x, t_vertex y); 
 
-//////// main ////////
-int main() {
-  printf("Hello world!\n");
-  
-  return 0;
-}
-
-
-//////// Piles ////////
+//Fonctions utiles(Piles)
 
 // Utilisation : t_stack * ps = stack_new();
 t_stack * stack_new() {
@@ -121,8 +111,7 @@ t_vertex stack_top(t_stack * ps) {
 }
 
 
-
-//////// Listes chaînées ////////
+//Fonctions utiles(Listes chaînées)
 
 // Utilisation : t_list l = list_new();
 t_list list_new() {
