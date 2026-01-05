@@ -1,3 +1,5 @@
+//tout vient du fichier "base_fil_rouge" ; g codé entre les lignes 53-73, 75 et 210-fin
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -23,7 +25,7 @@ typedef t_list t_stack;
 
 //////// Graphes ////////
 
-//////// Piles ////////
+//////// Prototypes Piles ////////
 void stack_show(t_stack * ps);
 t_stack * stack_new();
 int stack_is_empty(t_stack * ps);
@@ -31,7 +33,7 @@ void stack_push(t_vertex e, t_stack * ps);
 t_vertex stack_pop(t_stack * ps);
 t_vertex stack_top(t_stack * ps);
 
-//////// Listes chaînées ////////
+//////// Prototypes Listes chaînées ////////
 t_list list_new();
 t_list list_add_head(t_vertex e, t_list l);
 int list_is_empty(t_list l);
@@ -46,8 +48,8 @@ t_node * list_cursor_next(t_node * lc);
 
 
 // TODO : type représentant un graphe // askip partie de Youri
-//Rq : espace juste alloué, ini pas faite (tt est vide)
 
+//Rq : espace juste alloué, ini pas faite (tt est vide)
 //format liste d'adjacence
 typedef struct {
   int size; // Taille
@@ -58,18 +60,18 @@ t_graph_l* creer_graphe_liste(int taille) {
   int i;
   t_graph_l* g = malloc(sizeof(t_graph_l));  //alloue esp de taille sizeof()
   assert(g != NULL);    //si malloc, assert pour vérif si esp est vrm dispo
-  g->size = taille;    //N_sommets colonnes créées
+  g->size = taille;     //N_sommets colonnes créées
   t_list* l = malloc(sizeof(t_list));
   assert(l!=NULL);
   for(i = 0; i < taille; i++) { //pour chaque colonne
-    t_list new = list_new(); 
-    l[i] = new;
+    t_list new = list_new();   
+    l[i] = new;                //on ajoute une liste (vide) qui contiendra les voisins du sommet correspondants
   }
   g->l = l;
   return g;
 }
 
-// TODO : prototypes //
+//prototypes fonction à coder
 void recherche_iter(t_graph_l g, t_vertex x, t_vertex y); 
 
 //////// main ////////
@@ -204,9 +206,7 @@ t_node * list_cursor_next(t_node * lc) {
 }
 
 
-// TODO : fonctions
-//Prog 2, itératif
-
+//Programme
 void recherche_iter(t_graph_l g, t_vertex x, t_vertex y) {
     t_vertex w;
     t_stack *stack_traversal = stack_new();
@@ -230,16 +230,16 @@ void recherche_iter(t_graph_l g, t_vertex x, t_vertex y) {
                 stack_push(x, stack_path);
                 stack_push(-1, stack_traversal);
               //format liste
-                t_node *p = g.l[0];
+                t_node *p = g.l[x];   //on regarde le contenu de la colonne associée au sommet x (=ses voisins)
                 while (p != NULL) {
-                  w = p->val;
-                  stack_push(w, stack_traversal);
-                  p = p->p_next;
+                  w = p->val;               //on prend la ieme valeur du contenu de la colonne
+                  stack_push(w, stack_traversal);   //on la place dans stack_transversal
+                  p = p->p_next;        //on passe à la (i+1)eme valeur
                 }
                 }
             }
         }
-    if (!stack_is_empty(stack_path)) {
+    if (!stack_is_empty(stack_path)) {     //le chemin est trouvé
         while (!stack_is_empty(stack_path)) {
             stack_push(stack_pop(stack_path), stack_path_final);
         }
