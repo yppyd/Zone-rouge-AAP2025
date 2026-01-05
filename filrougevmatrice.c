@@ -16,8 +16,7 @@ typedef struct node {
 typedef t_node * t_list;
 typedef t_list t_stack;
 
-// --- DÉFINITION DU GRAPHE (Listes d'adjacence) ---
-// D'après le PDF Page 4 
+// --- DÉFINITION DU GRAPHE (Listes d'adjacence) --- 
 typedef struct {
   int size;   // Nombre de sommets
   t_list * l; // Tableau de listes d'adjacence (tableau de têtes de listes)
@@ -52,7 +51,7 @@ t_node * list_cursor_next(t_node * lc);
 
 //////// MAIN ////////
 int main(int argc, char *argv[]) {
-    // Gestion des arguments selon le PDF Page 7 
+    // Gestion des arguments
     char *input_filename = NULL;
     char *output_filename = NULL;
 
@@ -112,8 +111,7 @@ int main(int argc, char *argv[]) {
 
 //////// GRAPHES (V Matrice) ////////
 
-// Structure de graphe (Matrice d'adjacence dynamique)
-// PDF Page 3
+// Structure de graphe (Matrice d'adjacence dynamique
 typedef struct {
   int size;      // Nombre de sommets
   t_bool ** m;   // Matrice d'adjacence (tableau de tableaux de booléens)
@@ -129,7 +127,6 @@ void graph_write_dot(t_graph * g, FILE * fp);
 //////// Implémentation ////////
 
 // Crée un graphe de taille donnée (allocation dynamique de la matrice)
-// PDF Page 4
 t_graph * graph_new(int size) {
     int i, j;
     t_graph * g = malloc(sizeof(t_graph));
@@ -147,7 +144,6 @@ t_graph * graph_new(int size) {
         
         // 3. Initialisation à 0 (FAUX)
         // Le malloc n'initialise pas la mémoire, il faut le faire manuellement
-        // PDF Page 4 (note en bas de page)
         for (j = 0; j < g->size; j++) {
             g->m[i][j] = 0;
         }
@@ -179,8 +175,7 @@ void graph_add_edge(t_graph * g, t_vertex src, t_vertex dest) {
     g->m[src][dest] = 1;
 }
 
-// Lecture depuis un fichier (Format 1 : Numéros)
-// PDF Page 5
+// Lecture depuis un fichier (Format 1 : Numéros
 t_graph * graph_read_from_file(FILE * fp) {
     int size;
     int src, dest;
@@ -204,7 +199,6 @@ t_graph * graph_read_from_file(FILE * fp) {
 }
 
 // Écriture au format DOT
-// PDF Page 7
 void graph_write_dot(t_graph * g, FILE * fp) {
     fprintf(fp, "digraph mon_graphe {\n");
     
@@ -345,4 +339,5 @@ int list_cursor_get_val(t_node * lc) {
 t_node * list_cursor_next(t_node * lc) {
   assert(lc != NULL);
   return lc->p_next;
+
 }
