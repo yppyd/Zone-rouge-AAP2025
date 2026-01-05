@@ -16,8 +16,7 @@ typedef struct node {
 typedef t_node * t_list;
 typedef t_list t_stack;
 
-// --- DÉFINITION DU GRAPHE (Listes d'adjacence) ---
-// D'après le PDF Page 4 
+// --- DÉFINITION DU GRAPHE (Listes d'adjacence) --- 
 typedef struct {
   int size;   // Nombre de sommets
   t_list * l; // Tableau de listes d'adjacence (tableau de têtes de listes)
@@ -113,7 +112,6 @@ int main(int argc, char *argv[]) {
 //////// GRAPHES ////////
 
 // Crée un graphe de taille donnée (allocation dynamique)
-// PDF Page 4 [cite: 112]
 t_graph * graph_new(int size) {
     t_graph * g = malloc(sizeof(t_graph));
     assert(g != NULL);
@@ -151,7 +149,6 @@ void graph_add_edge(t_graph * g, t_vertex src, t_vertex dest) {
 }
 
 // Lecture selon le Format 1 (Numéros)
-// PDF Page 5 [cite: 132]
 t_graph * graph_read_from_file(FILE * fp) {
     int size;
     int src, dest;
@@ -176,7 +173,6 @@ t_graph * graph_read_from_file(FILE * fp) {
 }
 
 // Écriture au format DOT
-// PDF Page 7 [cite: 173]
 void graph_write_dot(t_graph * g, FILE * fp) {
     fprintf(fp, "digraph mon_graphe {\n");
     
@@ -302,7 +298,6 @@ t_list list_free(t_list l) {
 
 // Retourne un curseur de liste pour parcourir l
 // Utilisation : t_node * lc = list_cursor_new(l);
-// Remarque : en fait, un curseur est aussi une liste chaînée !
 t_node * list_cursor_new(t_list l) {
   return l;
 }
@@ -325,3 +320,4 @@ t_node * list_cursor_next(t_node * lc) {
   assert(lc != NULL);
   return lc->p_next;
 }
+
