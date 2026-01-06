@@ -73,6 +73,7 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out);
 // ======================================================================
 //                                MAIN
 // ======================================================================
+// Le main reste identique à la version précédente
 int main(int argc, char *argv[]) {
     char *input_filename = NULL;
     char *output_filename = NULL;
@@ -107,12 +108,12 @@ int main(int argc, char *argv[]) {
 
     t_graph * g = graph_read_from_file(in_stream);
     if (input_filename != NULL) fclose(in_stream);
-    
+
     if (g == NULL) { fprintf(stderr, "Echec lecture graphe.\n"); return 1; }
 
     // 3. Gestion du flux de sortie
     FILE *out_stream = stdout; 
-    
+
     if (output_filename != NULL) {
         out_stream = fopen(output_filename, "w");
         if (out_stream == NULL) {
@@ -203,7 +204,7 @@ t_graph * graph_read_from_file(FILE * fp) {
 void graph_write_dot(t_graph * g, FILE * fp) {
     fprintf(fp, "digraph G {\n");
     for (int i = 0; i < g->size; i++) {
-        // Parcours de la liste des voisins
+        // Parcours de la liste des voisins [cite: 59, 72]
         t_node * curr = g->l[i];
         while (curr != NULL) {
             fprintf(fp, "  %d -> %d;\n", i, curr->val);
@@ -279,8 +280,8 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
     t_stack *stack_traversal = stack_new();
     t_stack *stack_path = stack_new();
     t_stack *stack_path_final = stack_new();
-    
-    // Malloc + boucle init
+
+    // Modification ICI : malloc + boucle init
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
@@ -290,7 +291,7 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
 
     while (!stack_is_empty(stack_traversal)) {
         x = stack_pop(stack_traversal);
-        
+
         if (x == y) {
             stack_push(x, stack_path);
             found = VRAI;
@@ -302,7 +303,7 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
                 marking[x] = VRAI;
                 stack_push(x, stack_path);
                 stack_push(-1, stack_traversal);
-                
+
                 // --- Adaptation Listes : Parcours des voisins ---
                 t_node * curr = g->l[x];
                 while (curr != NULL) {
@@ -329,7 +330,7 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
 }
 
 t_bool Recherche_recur(t_graph *g, t_vertex x, t_vertex y, t_stack *stack) {
-    // Malloc + boucle init
+    // Modification ICI : malloc + boucle init
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
@@ -345,10 +346,10 @@ t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_
         stack_push(x, stack);
         return VRAI;
     }
-    
+
     if (marking[x] == FAUX) {
         marking[x] = VRAI;
-        
+
         // --- Adaptation Listes : Parcours des voisins ---
         t_node * curr = g->l[x];
         while (curr != NULL) {
@@ -375,13 +376,13 @@ void enum_cfc_kosaraju(t_graph *g, FILE *out){
     Kosaraju_1(g, order);
     t_graph * h = graph_transpose(g);
     Kosaraju_2(h, order, out);
-    
+
     graph_free(h);
     free(order);
 }
 
 void Kosaraju_1(t_graph *g, int *order){
-    // Malloc + boucle init
+    // Modification ICI : malloc + boucle init
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
@@ -398,7 +399,7 @@ void Kosaraju_1(t_graph *g, int *order){
 int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step){
     if(marking[x] == FAUX){
         marking[x] = VRAI;
-        
+
         // --- Adaptation Listes : Parcours voisins ---
         t_node * curr = g->l[x];
         while (curr != NULL) {
@@ -406,7 +407,7 @@ int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step)
             curr = curr->p_next;
         }
         // --------------------------------------------
-        
+
         order[x] = step;
         step++;
     }
@@ -414,7 +415,7 @@ int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step)
 }
 
 void Kosaraju_2(t_graph *g, int *order, FILE *out) {
-    // Malloc + boucle init
+    // Modification ICI : malloc + boucle init
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
@@ -451,6 +452,8 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
         curr = curr->p_next;
     }
     // --------------------------------------------
-    
+
+    return VRAI;
+}
     return VRAI;
 }
