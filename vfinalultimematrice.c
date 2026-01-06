@@ -1,8 +1,3 @@
-/*
- * AAP - Projet Fil Rouge 2025-2026
- * Compilation : gcc filrouge.c -o filrouge
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
