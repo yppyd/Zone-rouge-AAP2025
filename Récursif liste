@@ -1,0 +1,181 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+typedef int t_bool;
+typedef int t_vertex;
+
+//Création de types
+
+typedef struct node {
+    t_vertex val;
+    struct node *next;
+} t_node;
+
+typedef t_node* t_list;   //liste de successeurs
+typedef t_node* t_stack;  //pile pour reconstruire le chemin 
+
+/Type pile
+static void push(t_stack *s, t_vertex v) {
+    t_node *n = (t_node*)malloc(sizeof(*n));
+    assert(n != NULL);
+    n->val = v;
+    n->next = *s;
+    *s = n;
+}
+
+static t_bool stack_empty(const t_stack *s) {
+    return (*s == NULL);
+}
+
+static t_vertex pop(t_stack *s) {
+    assert(s != NULL && *s != NULL);
+    t_node *n = *s;
+    t_vertex v = n->val;
+    *s = n->next;
+    free(n);
+    return v;
+}
+
+static void stack_free(t_stack *s) {
+    while (!stack_empty(s)) (void)pop(s);
+}
+
+//Création de graphes en listes
+
+typedef struct {
+    int size;
+    t_list *adj;   // adj[x] = tête de la liste des successeurs de x
+} t_graph;
+
+static t_graph* graph_create(int n) {
+    assert(n > 0);
+    t_graph *g = (t_graph*)malloc(sizeof(*g));
+    assert(g != NULL);
+
+    g->size = n;
+    g->adj = (t_list*)calloc(n, sizeof(*g->adj));
+    assert(g->adj != NULL);
+
+    return g;
+}
+
+static void graph_free(t_graph *g) {
+    if (!g) return;
+    for (int i = 0; i < g->size; i++) {
+        t_node *p = g->adj[i];
+        while (p) {
+            t_node *tmp = p;
+            p = p->next;
+            free(tmp);
+        }
+    }
+    free(g->adj);
+    free(g);
+}
+
+static int taille_graphe(const t_graph *g) {
+    return g->size;
+}
+
+static t_list successeurs(const t_graph *g, t_vertex x) {
+    return g->adj[x];
+}
+
+static void graph_add_edge(t_graph *g, t_vertex x, t_vertex y) {
+    assert(g != NULL);
+    assert(0 <= x && x < g->size);
+    assert(0 <= y && y < g->size);
+
+    t_node *n = (t_node*)malloc(sizeof(*n));
+    assert(n != NULL);
+    n->val = y;
+    n->next = g->adj[x];
+    g->adj[x] = n;
+}
+
+//Recherche récursive
+
+static t_bool Recherche_recur_f(const t_graph *g,
+                               t_vertex x, t_vertex y,
+                               t_bool *marking,
+                               t_stack *path)
+{
+    if (x == y) {
+        push(path, x);
+        return 1;
+    }
+
+    if (marking[x]) return 0;
+    marking[x] = 1;
+
+    for (t_node *p = successeurs(g, x); p != NULL; p = p->next) {
+        t_vertex w = p->val;
+        if (Recherche_recur_f(g, w, y, marking, path)) {
+            push(path, x);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+t_bool Recherche_recur(const t_graph *g, t_vertex x, t_vertex y, t_stack *path)
+{
+    assert(g != NULL);
+    assert(path != NULL);
+    assert(0 <= x && x < g->size);
+    assert(0 <= y && y < g->size);
+
+    int n = taille_graphe(g);
+    t_bool *marking = (t_bool*)malloc(n * sizeof(*marking));
+    assert(marking != NULL);
+
+    for (int i = 0; i < n; i++) marking[i] = 0;
+    *path = NULL;
+
+    t_bool found = Recherche_recur_f(g, x, y, marking, path);
+
+    free(marking);
+    return found;
+}
+
+// Affichage du chemin stocké dans la pile avec un ordre
+
+static void afficher_chemin(t_stack *path) {
+    if (stack_empty(path)) {
+        printf("Aucun chemin\n");
+        return;
+    }
+    t_vertex v = pop(path);
+    printf("%d", v);
+    while (!stack_empty(path)) {
+        v = pop(path);
+        printf(" -> %d", v);
+    }
+    printf("\n");
+}
+
+
+#ifdef TEST_LIST
+int main(void) {
+    t_graph *g = graph_create(6);
+    graph_add_edge(g, 0, 1);
+    graph_add_edge(g, 1, 2);
+    graph_add_edge(g, 2, 4);
+    graph_add_edge(g, 0, 3);
+    graph_add_edge(g, 3, 4);
+    graph_add_edge(g, 4, 5);
+
+    t_stack path = NULL;
+    if (Recherche_recur(g, 0, 5, &path)) {
+        printf("Chemin trouvé : ");
+        afficher_chemin(&path);
+    } else {
+        printf("Pas de chemin\n");
+    }
+
+    stack_free(&path);
+    graph_free(g);
+    return 0;
+}
+#endif
