@@ -361,7 +361,7 @@ void enum_cfc_kosaraju(t_graph *g, FILE *out){
 
 void Kosaraju_1(t_graph *g, int *order){
     // Modification ICI : malloc + boucle init
-    //  Initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
+    //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
@@ -379,8 +379,10 @@ void Kosaraju_1(t_graph *g, int *order){
 }
 
 int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step){
+    // Si le sommet est déjà marqué, pas besoin de modifier la valeur de step
     if(marking[x] == FAUX){
         marking[x] = VRAI;
+        
         // Parcours des successeurs de x
         for (int y = 0; y < g->size; y++) {
             if (g->m[x][y]) step = Kosaraju_1_recur(g, y, marking, order, step);
@@ -393,16 +395,17 @@ int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step)
 
 void Kosaraju_2(t_graph *g, int *order, FILE *out) {
     // Modification ICI : malloc + boucle init
-    //  Initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
+    //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
+    
+    // Allocation, initialisation et remplissage d'un tableau d’entiers permettant de stocker l’ordre inverse des suffixe
     int *inv_order = malloc(g->size * sizeof(int));
-    int nb_scc = 0;
-
     for (int x = 0; x < g->size; x++) inv_order[(g->size - 1) - order[x]] = x;
-
+    
+    // Comptage des cfc
+    int nb_scc = 0;
     fprintf(out, "Liste des Composantes Fortement Connexes :\n");
     for (int i = 0; i < g->size; i++) {
         int x = inv_order[i]; 
@@ -418,11 +421,14 @@ void Kosaraju_2(t_graph *g, int *order, FILE *out) {
 }
 
 t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
+    // Si le sommet est déjà marqué, pas besoin d'appliquer la fonction
     if (marking[x] == VRAI) return FAUX;
-
+    
+    
     marking[x] = VRAI;
     fprintf(out, "%d ", x);
-
+    
+    // Parcours des successeurs de x
     for (int y = 0; y < g->size; y++) {
         if (g->m[x][y]) {
             Kosaraju_2_recur(g, y, marking, out);
