@@ -1,6 +1,5 @@
 /*
  * AAP - Projet Fil Rouge 2025-2026
- * Version : MATRICE - Avec malloc (sans calloc)
  * Compilation : gcc filrouge.c -o filrouge
  */
 
