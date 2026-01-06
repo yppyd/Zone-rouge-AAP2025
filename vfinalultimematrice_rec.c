@@ -1,3 +1,9 @@
+/*
+ * AAP - Projet Fil Rouge 2025-2026
+ * Version : MATRICE - Avec malloc (sans calloc) + Option récursif (-r)
+ * Compilation : gcc filrouge.c -o filrouge
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -69,13 +75,13 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out);
 // ======================================================================
 
 int main(int argc, char *argv[]) {
-    char *input_filename  = NULL;
+    char *input_filename = NULL;
     char *output_filename = NULL;
-    int start_node        = -1;
-    int goal_node         = -1;
-    t_bool mode_cfc       = FAUX;
-    t_bool mode_path      = FAUX;
-    t_bool mode_rec       = FAUX; 
+    int start_node = -1;
+    int goal_node = -1;
+    t_bool mode_cfc = FAUX;
+    t_bool mode_path = FAUX;
+    t_bool mode_recursive = FAUX; // Nouveau : Choix de l'algo
 
     // 1. Analyse des arguments
     for (int i = 1; i < argc; i++) {
@@ -90,9 +96,10 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "-cfc") == 0) {
             mode_cfc = VRAI;
         } else if (strcmp(argv[i], "-r") == 0) {
-            mode_rec = VRAI;
+            mode_recursive = VRAI; // Activation du mode récursif
         } else {
-            printf("Usage incorrect.\n"); return 1;
+            printf("Usage incorrect : %s\n", argv[i]); 
+            return 1;
         }
     }
 
@@ -131,16 +138,25 @@ int main(int argc, char *argv[]) {
         } else if (start_node < 0 || start_node >= g->size || goal_node < 0 || goal_node >= g->size) {
             fprintf(stderr, "Erreur : Sommets invalides.\n");
         } else {
-            if(output_filename != NULL){
-                printf("Recherche de chemin en cours...\n");
-                if (mode_rec){
-                    recherche_rec(g, start_node, goal_node, out_stream);
-                }
-                else{
-                    recherche_iter(g, start_node, goal_node, out_stream);
-                }
-            } 
+            if(output_filename != NULL) printf("Recherche de chemin en cours...\n");
             
+            // --- CHOIX DE L'ALGORITHME ---
+            if (mode_recursive) {
+                // Mode Récursif
+                t_stack path_stack; // Sera initialisée dans la fonction
+                if (Recherche_recur(g, start_node, goal_node, &path_stack)) {
+                    // Affichage : La pile contient le chemin (Start -> ... -> Goal)
+                    while (!stack_is_empty(&path_stack)) {
+                        fprintf(out_stream, "%d ", stack_pop(&path_stack));
+                    }
+                    fprintf(out_stream, "\n");
+                } else {
+                    fprintf(out_stream, "Pas de chemin trouve.\n");
+                }
+            } else {
+                // Mode Itératif (par défaut)
+                recherche_iter(g, start_node, goal_node, out_stream);
+            }
         }
     } 
     else {
@@ -160,7 +176,7 @@ int main(int argc, char *argv[]) {
 
 
 // ======================================================================
-//                       IMPLÉMENTATION GRAPHES
+//                        IMPLÉMENTATION GRAPHES
 // ======================================================================
 
 t_graph * graph_new(int size) {
@@ -220,8 +236,94 @@ t_graph * graph_transpose(t_graph * g) {
 }
 
 // ======================================================================
-//                       IMPLÉMENTATION PILES & LISTES
+//                        IMPLÉMENTATION PILES & LISTES
+// ================#include <stdio.h>
+    return FAUX;
+}
+
+
 // ======================================================================
+//                       PARTIE 3 : KOSARAJU (CFC)
+// ======================================================================
+
+void enum_cfc_kosaraju(t_graph *g, FILE *out){
+    int *order = malloc(g->size * sizeof(int));
+    assert(order != NULL);
+
+    Kosaraju_1(g, order);
+    t_graph * h = graph_transpose(g);
+    Kosaraju_2(h, order, out);
+    
+    graph_free(h);
+    free(order);
+}
+
+void Kosaraju_1(t_graph *g, int *order){
+    // Modification ICI : malloc + boucle init
+    t_bool *marking = malloc(g->size * sizeof(t_bool));
+    assert(marking != NULL);
+    for (int i = 0; i < g->size; i++) marking[i] = FAUX;
+
+    int step = 0;
+    for (int x = 0; x < g->size; x++) {
+         if (marking[x] == FAUX) {
+            step = Kosaraju_1_recur(g, x, marking, order, step);
+         }
+    }
+    free(marking);
+}
+
+int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step){
+    if(marking[x] == FAUX){
+        marking[x] = VRAI;
+        for (int y = 0; y < g->size; y++) {
+            if (g->m[x][y]) step = Kosaraju_1_recur(g, y, marking, order, step);
+        }
+        order[x] = step;
+        step++;
+    }
+    return step;
+}
+
+void Kosaraju_2(t_graph *g, int *order, FILE *out) {
+    // Modification ICI : malloc + boucle init
+    t_bool *marking = malloc(g->size * sizeof(t_bool));
+    assert(marking != NULL);
+    for (int i = 0; i < g->size; i++) marking[i] = FAUX;
+
+    int *inv_order = malloc(g->size * sizeof(int));
+    int nb_scc = 0;
+
+    for (int x = 0; x < g->size; x++) inv_order[(g->size - 1) - order[x]] = x;
+
+    fprintf(out, "Liste des Composantes Fortement Connexes :\n");
+    for (int i = 0; i < g->size; i++) {
+        int x = inv_order[i]; 
+        if (Kosaraju_2_recur(g, x, marking, out)) {
+            nb_scc++;
+            fprintf(out, "\n");
+        }
+    }
+    fprintf(out, "\nTotal : %d composantes trouvees.\n", nb_scc);
+
+    free(marking);
+    free(inv_order);
+}
+
+t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
+    if (marking[x] == VRAI) return FAUX;
+
+    marking[x] = VRAI;
+    fprintf(out, "%d ", x);
+
+    for (int y = 0; y < g->size; y++) {
+        if (g->m[x][y]) {
+            Kosaraju_2_recur(g, y, marking, out);
+        }
+    }
+    return VRAI;
+}
+======================================================
 
 t_stack * stack_new() {
     t_stack * ps = malloc(sizeof(*ps));
@@ -264,7 +366,7 @@ t_list list_free(t_list l) {
 
 
 // ======================================================================
-//                       PARTIE 2 : RECHERCHE CHEMIN
+//                        PARTIE 2 : RECHERCHE CHEMIN
 // ======================================================================
 
 // Version Itérative
@@ -350,28 +452,40 @@ t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_
 
 
 // ======================================================================
-//                       PARTIE 3 : KOSARAJU (CFC)
+//                        PARTIE 3 : KOSARAJU (CFC)
 // ======================================================================
 
 void enum_cfc_kosaraju(t_graph *g, FILE *out){
+    // Allocation du graphe g
     int *order = malloc(g->size * sizeof(int));
     assert(order != NULL);
-
-    Kosaraju_1(g, order);
-    t_graph * h = graph_transpose(g);
-    Kosaraju_2(h, order, out);
     
+    /* Parcours en profondeur sur g dans un ordre arbitraire, 
+    conservation de l’ordre des suffixes de parcours dans le tableau order */
+    Kosaraju_1(g, order);
+
+    /* Calcul du traphe inverse de g (transposition de la matrice d'adjacence) */
+    t_graph * h = graph_transpose(g);
+
+    /* Parcours en profondeur sur h dans l’ordre inverse de celui donné par order, 
+    affichage des sommets des sous-graphes parcourus depuis chaque sommet initial */
+    Kosaraju_2(h, order, out);
+
+    // Libération des espaces alloués aux éléments h et order
     graph_free(h);
     free(order);
 }
 
 void Kosaraju_1(t_graph *g, int *order){
-    // Modification ICI : malloc + boucle init
+    //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
+    
+    // Entier permettant de compter l’ordre suffixe
     int step = 0;
+    
+    // Parcours des sommets du graphe
     for (int x = 0; x < g->size; x++) {
          if (marking[x] == FAUX) {
             step = Kosaraju_1_recur(g, x, marking, order, step);
@@ -381,8 +495,11 @@ void Kosaraju_1(t_graph *g, int *order){
 }
 
 int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step){
+    // Si le sommet est déjà marqué, pas besoin de modifier la valeur de step
     if(marking[x] == FAUX){
         marking[x] = VRAI;
+        
+        // Parcours des successeurs de x
         for (int y = 0; y < g->size; y++) {
             if (g->m[x][y]) step = Kosaraju_1_recur(g, y, marking, order, step);
         }
@@ -393,16 +510,17 @@ int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step)
 }
 
 void Kosaraju_2(t_graph *g, int *order, FILE *out) {
-    // Modification ICI : malloc + boucle init
+    //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
+    
+    // Allocation, initialisation et remplissage d'un tableau d’entiers permettant de stocker l’ordre inverse des suffixe
     int *inv_order = malloc(g->size * sizeof(int));
-    int nb_scc = 0;
-
     for (int x = 0; x < g->size; x++) inv_order[(g->size - 1) - order[x]] = x;
-
+    
+    // Comptage des cfc
+    int nb_scc = 0;
     fprintf(out, "Liste des Composantes Fortement Connexes :\n");
     for (int i = 0; i < g->size; i++) {
         int x = inv_order[i]; 
@@ -413,16 +531,20 @@ void Kosaraju_2(t_graph *g, int *order, FILE *out) {
     }
     fprintf(out, "\nTotal : %d composantes trouvees.\n", nb_scc);
 
+    // Libération des espaces alloués aux éléments marking et inv_order
     free(marking);
     free(inv_order);
 }
 
 t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
+    // Si le sommet est déjà marqué, pas besoin d'appliquer la fonction
     if (marking[x] == VRAI) return FAUX;
-
+    
+    
     marking[x] = VRAI;
     fprintf(out, "%d ", x);
-
+    
+    // Parcours des successeurs de x
     for (int y = 0; y < g->size; y++) {
         if (g->m[x][y]) {
             Kosaraju_2_recur(g, y, marking, out);
