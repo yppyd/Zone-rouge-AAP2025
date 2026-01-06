@@ -348,19 +348,27 @@ t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_
 // ======================================================================
 
 void enum_cfc_kosaraju(t_graph *g, FILE *out){
+    // Allocation du graphe g
     int *order = malloc(g->size * sizeof(int));
     assert(order != NULL);
-
-    Kosaraju_1(g, order);
-    t_graph * h = graph_transpose(g);
-    Kosaraju_2(h, order, out);
     
+    /* Parcours en profondeur sur g dans un ordre arbitraire, 
+    conservation de l’ordre des suffixes de parcours dans le tableau order */
+    Kosaraju_1(g, order);
+
+    /* Calcul du traphe inverse de g (transposition de la matrice d'adjacence) */
+    t_graph * h = graph_transpose(g);
+
+    /* Parcours en profondeur sur h dans l’ordre inverse de celui donné par order, 
+    affichage des sommets des sous-graphes parcourus depuis chaque sommet initial */
+    Kosaraju_2(h, order, out);
+
+    // Libération des espaces alloués aux éléments h et order
     graph_free(h);
     free(order);
 }
 
 void Kosaraju_1(t_graph *g, int *order){
-    // Modification ICI : malloc + boucle init
     //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
@@ -394,7 +402,6 @@ int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step)
 }
 
 void Kosaraju_2(t_graph *g, int *order, FILE *out) {
-    // Modification ICI : malloc + boucle init
     //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
@@ -416,6 +423,7 @@ void Kosaraju_2(t_graph *g, int *order, FILE *out) {
     }
     fprintf(out, "\nTotal : %d composantes trouvees.\n", nb_scc);
 
+    // Libération des espaces alloués aux éléments marking et inv_order
     free(marking);
     free(inv_order);
 }
