@@ -361,11 +361,15 @@ void enum_cfc_kosaraju(t_graph *g, FILE *out){
 
 void Kosaraju_1(t_graph *g, int *order){
     // Modification ICI : malloc + boucle init
+    //  Initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
+    
+    // Entier permettant de compter l’ordre suffixe
     int step = 0;
+    
+    // Parcours des sommets du graphe
     for (int x = 0; x < g->size; x++) {
          if (marking[x] == FAUX) {
             step = Kosaraju_1_recur(g, x, marking, order, step);
@@ -377,6 +381,7 @@ void Kosaraju_1(t_graph *g, int *order){
 int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step){
     if(marking[x] == FAUX){
         marking[x] = VRAI;
+        // Parcours des successeurs de x
         for (int y = 0; y < g->size; y++) {
             if (g->m[x][y]) step = Kosaraju_1_recur(g, y, marking, order, step);
         }
@@ -388,6 +393,7 @@ int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step)
 
 void Kosaraju_2(t_graph *g, int *order, FILE *out) {
     // Modification ICI : malloc + boucle init
+    //  Initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
