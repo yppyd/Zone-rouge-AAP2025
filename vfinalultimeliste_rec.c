@@ -427,24 +427,36 @@ void Recherche_recur(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
 // ======================================================================
 
 void enum_cfc_kosaraju(t_graph *g, FILE *out){
+    // Allocation du graphe g
     int *order = malloc(g->size * sizeof(int));
     assert(order != NULL);
-
+    
+    /* Parcours en profondeur sur g dans un ordre arbitraire, 
+    conservation de l’ordre des suffixes de parcours dans le tableau order */
     Kosaraju_1(g, order);
+    
+    /* Calcul du traphe inverse de g (transposition de la matrice d'adjacence) */
     t_graph * h = graph_transpose(g);
+    
+    /* Parcours en profondeur sur h dans l’ordre inverse de celui donné par order, 
+    affichage des sommets des sous-graphes parcourus depuis chaque sommet initial */
     Kosaraju_2(h, order, out);
 
+    // Libération des espaces alloués aux éléments h et order
     graph_free(h);
     free(order);
 }
 
 void Kosaraju_1(t_graph *g, int *order){
-    // Modification ICI : malloc + boucle init
+    //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
+    
+    // Entier permettant de compter l’ordre suffixe
     int step = 0;
+    
+    // Parcours des sommets du graphe
     for (int x = 0; x < g->size; x++) {
          if (marking[x] == FAUX) {
             step = Kosaraju_1_recur(g, x, marking, order, step);
@@ -454,16 +466,16 @@ void Kosaraju_1(t_graph *g, int *order){
 }
 
 int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step){
+    // Si le sommet est déjà marqué, pas besoin de modifier la valeur de step
     if(marking[x] == FAUX){
         marking[x] = VRAI;
 
-        // --- Adaptation Listes : Parcours voisins ---
+        // Parcours des successeurs de x
         t_node * curr = g->l[x];
         while (curr != NULL) {
             step = Kosaraju_1_recur(g, curr->val, marking, order, step);
             curr = curr->p_next;
         }
-        // --------------------------------------------
 
         order[x] = step;
         step++;
@@ -472,16 +484,17 @@ int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step)
 }
 
 void Kosaraju_2(t_graph *g, int *order, FILE *out) {
-    // Modification ICI : malloc + boucle init
+    //  Allocation et initialisation d'un tableau de booléens permettant de marquer les sommets déjà visités
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
 
+    // Allocation, initialisation et remplissage d'un tableau d’entiers permettant de stocker l’ordre inverse des suffixe
     int *inv_order = malloc(g->size * sizeof(int));
-    int nb_scc = 0;
-
     for (int x = 0; x < g->size; x++) inv_order[(g->size - 1) - order[x]] = x;
-
+    
+    // Comptage des cfc
+    int nb_scc = 0;
     fprintf(out, "Liste des Composantes Fortement Connexes :\n");
     for (int i = 0; i < g->size; i++) {
         int x = inv_order[i]; 
@@ -491,24 +504,25 @@ void Kosaraju_2(t_graph *g, int *order, FILE *out) {
         }
     }
     fprintf(out, "\nTotal : %d composantes trouvees.\n", nb_scc);
-
+    
+    // Libération des espaces alloués aux éléments marking et inv_order
     free(marking);
     free(inv_order);
 }
 
 t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
+    // Si le sommet est déjà marqué, pas besoin d'appliquer la fonction
     if (marking[x] == VRAI) return FAUX;
 
     marking[x] = VRAI;
     fprintf(out, "%d ", x);
 
-    // --- Adaptation Listes : Parcours voisins ---
+    // Parcours des successeurs de x
     t_node * curr = g->l[x];
     while (curr != NULL) {
         Kosaraju_2_recur(g, curr->val, marking, out);
         curr = curr->p_next;
     }
-    // --------------------------------------------
 
     return VRAI;
 }
