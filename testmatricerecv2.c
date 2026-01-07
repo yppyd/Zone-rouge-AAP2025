@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {//création d'arguments pour les divers modes 
     int goal_node         = -1;
     t_bool mode_cfc       = FAUX;
     t_bool mode_path      = FAUX;
-    t_bool mode_rec       = FAUX
+    t_bool mode_rec       = FAUX;
     // Lecture des arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) {
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {//création d'arguments pour les divers modes 
         } else if (start_node < 0 || start_node >= g->size || goal_node < 0 || goal_node >= g->size) {
             fprintf(stderr, "Erreur : Sommets invalides.\n");
         } else {
-            if(output_filename != NULL) printf("Recherche de chemin en cours...\n")
+            if(output_filename != NULL) printf("Recherche de chemin en cours...\n");
             
                 if(mode_rec){
                 Recherche_recur(g, start_node, goal_node, out_stream);
@@ -185,7 +185,7 @@ int string_to_int(char *str) {
 // ======================================================================
 
 t_graph * graph_new(int size) { //Création de la matrice d'adjacence
-    t_graph * g = mallo c(sizeof(t_graph)); //allocation mémoire pour t_graph
+    t_graph * g = malloc(sizeof(t_graph)); //allocation mémoire pour t_graph
     g->size = size; //taille du graphe noté
     g->m = malloc(g->size * sizeof(t_bool *));
     assert(g->m != NULL);
@@ -489,4 +489,5 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
         }
     }
     return VRAI;
+
 }
