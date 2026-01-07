@@ -294,18 +294,13 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
     t_stack *stack_traversal = stack_new();
     t_stack *stack_path = stack_new();
     t_stack *stack_path_final = stack_new();
-    
-    // Modification ICI : malloc + boucle init
     t_bool *marking = malloc(g->size * sizeof(t_bool));
     assert(marking != NULL);
     for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
     stack_push(x, stack_traversal);
     t_bool found = FAUX;
-
     while (!stack_is_empty(stack_traversal)) {
-        x = stack_pop(stack_traversal);
-        
+        x = stack_pop(stack_traversal);     
         if (x == y) {
             stack_push(x, stack_path);
             found = VRAI;
@@ -349,7 +344,6 @@ t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_
     if (marking[x] == FAUX) {
         marking[x] = VRAI;
         
-        // --- ADAPTATION MATRICE : Boucle for ---
         for (int w = 0; w < g->size; w++) {
             if (g->m[x][w] == VRAI) { // Si l'arc existe dans la matrice
                 if (Recherche_recur_f(g, w, y, marking, stack)) {
@@ -358,12 +352,10 @@ t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_
                 }
             }
         }
-        // ---------------------------------------
     }
     return FAUX;
 }
 
-// Fonction Principale (Wrapper d'affichage)
 void Recherche_recur(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
     // 1. Allocation marking
     t_bool *marking = malloc(g->size * sizeof(t_bool));
@@ -491,3 +483,4 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
     return VRAI;
 
 }
+
