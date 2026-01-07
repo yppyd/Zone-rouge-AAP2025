@@ -201,7 +201,6 @@ void graph_free(t_graph * g) {
 
 void graph_add_edge(t_graph * g, t_vertex src, t_vertex dest) {
     if (src >= 0 && src < g->size && dest >= 0 && dest < g->size) {
-        // Ajout en tête de liste : complexité O(1)
         g->l[src] = list_add_head(dest, g->l[src]);
     }
 }
@@ -219,7 +218,6 @@ t_graph * graph_read_from_file(FILE * fp) {
 void graph_write_dot(t_graph * g, FILE * fp) {
     fprintf(fp, "digraph G {\n");
     for (int i = 0; i < g->size; i++) {
-        // Parcours de la liste des voisins [cite: 59, 72]
         t_node * curr = g->l[i];
         while (curr != NULL) {
             fprintf(fp, "  %d -> %d;\n", i, curr->val);
@@ -520,3 +518,4 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
     return VRAI;
 
 }
+
