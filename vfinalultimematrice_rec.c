@@ -306,6 +306,7 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
     free(stack_traversal); free(stack_path); free(stack_path_final);
 }
 
+//Recherche chemins par version récursive,  prépare structures et lance le DFS récursif 
 t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_stack *stack) {
     if (x == y) {
         stack_push(x, stack);
