@@ -378,7 +378,6 @@ void Recherche_recur(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
 
     // 5. Nettoyage
     free(marking);
-    // Note : stack est vide ici
 }
 
 // ======================================================================
@@ -483,4 +482,5 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
     return VRAI;
 
 }
+
 
