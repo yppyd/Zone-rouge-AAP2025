@@ -19,7 +19,7 @@ typedef struct node {
 typedef t_node * t_list;
 typedef t_list t_stack;
 
-// --- DÉFINITION DU GRAPHE (Listes d'adjacence) ---
+// Listes d'adjacence
 typedef struct {
     int size;      // Nombre de sommets
     t_list * l;    // Tableau de listes d'adjacence (tableau de têtes de listes)
@@ -67,8 +67,8 @@ t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out);
 // ======================================================================
 //                                MAIN
 // ======================================================================
-// Le main reste identique à la version précédente
-int main(int argc, char *argv[]) {
+
+int main(int argc, char *argv[]) { //création d'arguments pour les divers modes de fonctionnement du code 
     char *input_filename = NULL;
     char *output_filename = NULL;
     int start_node = -1;
@@ -78,35 +78,37 @@ int main(int argc, char *argv[]) {
 
     // 1. Analyse des arguments
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) {
+        if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) { // argument fichier d'entrée
             input_filename = argv[i + 1]; i++;
-        } else if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
+        } else if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) { // fichier de sortie optionnel
             output_filename = argv[i + 1]; i++;
-        } else if (strcmp(argv[i], "-start") == 0 && i + 1 < argc) {
+        } else if (strcmp(argv[i], "-start") == 0 && i + 1 < argc) { // sommet de depart pour le parcours en profondeur
             start_node = atoi(argv[i + 1]); mode_path = VRAI; i++;
-        } else if (strcmp(argv[i], "-goal") == 0 && i + 1 < argc) {
+        } else if (strcmp(argv[i], "-goal") == 0 && i + 1 < argc) { // sommet d'arrivée
             goal_node = atoi(argv[i + 1]); mode_path = VRAI; i++;
-        } else if (strcmp(argv[i], "-cfc") == 0) {
+        } else if (strcmp(argv[i], "-cfc") == 0) { //recherche des composantes fortement connexes 
             mode_cfc = VRAI;
         } else {
             printf("Usage incorrect.\n"); return 1;
         }
     }
 
-    // 2. Lecture du graphe
+    // Lecture du graphe
     FILE *in_stream = stdin;
-    if (input_filename != NULL) {
+    if (input_filename != NULL) { //choix du fichier + verif du fichier
         in_stream = fopen(input_filename, "r");
         if (in_stream == NULL) { perror("Erreur ouverture entree"); return 1; }
     }
 
-    t_graph * g = graph_read_from_file(in_stream);
+    t_graph * g = graph_read_from_file(in_stream); //utilisation de la fonction de conversion en graphe du fichier 
     if (input_filename != NULL) fclose(in_stream);
 
-    if (g == NULL) { fprintf(stderr, "Echec lecture graphe.\n"); return 1; }
+    if (g == NULL) { 
+        fprintf(stderr, "Echec lecture graphe.\n"); 
+        return 1; 
+    }
 
-    // 3. Gestion du flux de sortie
-    FILE *out_stream = stdout; 
+    FILE *out_stream = stdout; //gestion du fichier de sortie à peu près pareil qu'entrée  
 
     if (output_filename != NULL) {
         out_stream = fopen(output_filename, "w");
@@ -117,12 +119,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // 4. Exécution selon le mode
-    if (mode_cfc) {
+    // --- choix du mode selon l'arg ---
+    if (mode_cfc) { //utilisation de kosaraju 
         if(output_filename != NULL) printf("Calcul des CFC en cours...\n");
         enum_cfc_kosaraju(g, out_stream);
     } 
-    else if (mode_path) {
+    else if (mode_path) { //recherche parcours en profondeur (ajouter un arg -r pour le choix recursif/itératif
         if (start_node == -1 || goal_node == -1) {
             fprintf(stderr, "Erreur : Arguments -start et -goal requis.\n");
         } else if (start_node < 0 || start_node >= g->size || goal_node < 0 || goal_node >= g->size) {
