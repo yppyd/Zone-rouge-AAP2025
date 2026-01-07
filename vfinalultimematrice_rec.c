@@ -1,9 +1,3 @@
-/*
- * AAP - Projet Fil Rouge 2025-2026
- * Version : MATRICE - Avec malloc (sans calloc) + Option récursif (-r)
- * Compilation : gcc filrouge.c -o filrouge
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -59,8 +53,8 @@ t_list list_free(t_list l);
 
 // Partie 2 : Recherche de chemin
 void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out);
+void Recherche_recur(t_graph *g, t_vertex x, t_vertex y, FILE *out);
 t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_stack *stack);
-t_bool Recherche_recur(t_graph *g, t_vertex x, t_vertex y, t_stack *stack);
 
 // Partie 3 : Composantes Fortement Connexes (Kosaraju)
 void enum_cfc_kosaraju(t_graph *g, FILE *out);
@@ -81,7 +75,6 @@ int main(int argc, char *argv[]) {
     int goal_node = -1;
     t_bool mode_cfc = FAUX;
     t_bool mode_path = FAUX;
-    t_bool mode_recursive = FAUX; // Nouveau : Choix de l'algo
 
     // 1. Analyse des arguments
     for (int i = 1; i < argc; i++) {
@@ -95,11 +88,8 @@ int main(int argc, char *argv[]) {
             goal_node = atoi(argv[i + 1]); mode_path = VRAI; i++;
         } else if (strcmp(argv[i], "-cfc") == 0) {
             mode_cfc = VRAI;
-        } else if (strcmp(argv[i], "-r") == 0) {
-            mode_recursive = VRAI; // Activation du mode récursif
         } else {
-            printf("Usage incorrect : %s\n", argv[i]); 
-            return 1;
+            printf("Usage incorrect.\n"); return 1;
         }
     }
 
@@ -139,24 +129,7 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Erreur : Sommets invalides.\n");
         } else {
             if(output_filename != NULL) printf("Recherche de chemin en cours...\n");
-            
-            // --- CHOIX DE L'ALGORITHME ---
-            if (mode_recursive) {
-                // Mode Récursif
-                t_stack path_stack; // Sera initialisée dans la fonction
-                if (Recherche_recur(g, start_node, goal_node, &path_stack)) {
-                    // Affichage : La pile contient le chemin (Start -> ... -> Goal)
-                    while (!stack_is_empty(&path_stack)) {
-                        fprintf(out_stream, "%d ", stack_pop(&path_stack));
-                    }
-                    fprintf(out_stream, "\n");
-                } else {
-                    fprintf(out_stream, "Pas de chemin trouve.\n");
-                }
-            } else {
-                // Mode Itératif (par défaut)
-                recherche_iter(g, start_node, goal_node, out_stream);
-            }
+            Recherche_recur(g, start_node, goal_node, out_stream);
         }
     } 
     else {
@@ -176,7 +149,7 @@ int main(int argc, char *argv[]) {
 
 
 // ======================================================================
-//                        IMPLÉMENTATION GRAPHES
+//                       IMPLÉMENTATION GRAPHES
 // ======================================================================
 
 t_graph * graph_new(int size) {
@@ -236,94 +209,8 @@ t_graph * graph_transpose(t_graph * g) {
 }
 
 // ======================================================================
-//                        IMPLÉMENTATION PILES & LISTES
-// ================#include <stdio.h>
-    return FAUX;
-}
-
-
+//                       IMPLÉMENTATION PILES & LISTES
 // ======================================================================
-//                       PARTIE 3 : KOSARAJU (CFC)
-// ======================================================================
-
-void enum_cfc_kosaraju(t_graph *g, FILE *out){
-    int *order = malloc(g->size * sizeof(int));
-    assert(order != NULL);
-
-    Kosaraju_1(g, order);
-    t_graph * h = graph_transpose(g);
-    Kosaraju_2(h, order, out);
-    
-    graph_free(h);
-    free(order);
-}
-
-void Kosaraju_1(t_graph *g, int *order){
-    // Modification ICI : malloc + boucle init
-    t_bool *marking = malloc(g->size * sizeof(t_bool));
-    assert(marking != NULL);
-    for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
-    int step = 0;
-    for (int x = 0; x < g->size; x++) {
-         if (marking[x] == FAUX) {
-            step = Kosaraju_1_recur(g, x, marking, order, step);
-         }
-    }
-    free(marking);
-}
-
-int Kosaraju_1_recur(t_graph *g, int x, t_bool * marking, int * order, int step){
-    if(marking[x] == FAUX){
-        marking[x] = VRAI;
-        for (int y = 0; y < g->size; y++) {
-            if (g->m[x][y]) step = Kosaraju_1_recur(g, y, marking, order, step);
-        }
-        order[x] = step;
-        step++;
-    }
-    return step;
-}
-
-void Kosaraju_2(t_graph *g, int *order, FILE *out) {
-    // Modification ICI : malloc + boucle init
-    t_bool *marking = malloc(g->size * sizeof(t_bool));
-    assert(marking != NULL);
-    for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
-    int *inv_order = malloc(g->size * sizeof(int));
-    int nb_scc = 0;
-
-    for (int x = 0; x < g->size; x++) inv_order[(g->size - 1) - order[x]] = x;
-
-    fprintf(out, "Liste des Composantes Fortement Connexes :\n");
-    for (int i = 0; i < g->size; i++) {
-        int x = inv_order[i]; 
-        if (Kosaraju_2_recur(g, x, marking, out)) {
-            nb_scc++;
-            fprintf(out, "\n");
-        }
-    }
-    fprintf(out, "\nTotal : %d composantes trouvees.\n", nb_scc);
-
-    free(marking);
-    free(inv_order);
-}
-
-t_bool Kosaraju_2_recur(t_graph *g, int x, t_bool *marking, FILE *out) {
-    if (marking[x] == VRAI) return FAUX;
-
-    marking[x] = VRAI;
-    fprintf(out, "%d ", x);
-
-    for (int y = 0; y < g->size; y++) {
-        if (g->m[x][y]) {
-            Kosaraju_2_recur(g, y, marking, out);
-        }
-    }
-    return VRAI;
-}
-======================================================
 
 t_stack * stack_new() {
     t_stack * ps = malloc(sizeof(*ps));
@@ -366,7 +253,7 @@ t_list list_free(t_list l) {
 
 
 // ======================================================================
-//                        PARTIE 2 : RECHERCHE CHEMIN
+//                       PARTIE 2 : RECHERCHE CHEMIN
 // ======================================================================
 
 // Version Itérative
@@ -408,7 +295,7 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
     if (found) {
         while (!stack_is_empty(stack_path)) stack_push(stack_pop(stack_path), stack_path_final);
         while (!stack_is_empty(stack_path_final)) {
-            fprintf(out, "%d ", stack_pop(stack_path_final));
+            fprintf(out, "%d", stack_pop(stack_path_final));
         }
         fprintf(out, "\n");
     } else {
@@ -419,40 +306,57 @@ void recherche_iter(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
     free(stack_traversal); free(stack_path); free(stack_path_final);
 }
 
-t_bool Recherche_recur(t_graph *g, t_vertex x, t_vertex y, t_stack *stack) {
-    // Modification ICI : malloc + boucle init
-    t_bool *marking = malloc(g->size * sizeof(t_bool));
-    assert(marking != NULL);
-    for (int i = 0; i < g->size; i++) marking[i] = FAUX;
-
-    *stack = list_new();
-    t_bool res = Recherche_recur_f(g, x, y, marking, stack);
-    free(marking);
-    return res;
-}
-
 t_bool Recherche_recur_f(t_graph *g, t_vertex x, t_vertex y, t_bool *marking, t_stack *stack) {
     if (x == y) {
         stack_push(x, stack);
         return VRAI;
     }
+    
     if (marking[x] == FAUX) {
         marking[x] = VRAI;
+        
+        // --- ADAPTATION MATRICE : Boucle for ---
         for (int w = 0; w < g->size; w++) {
-            if (g->m[x][w] == VRAI) {
+            if (g->m[x][w] == VRAI) { // Si l'arc existe dans la matrice
                 if (Recherche_recur_f(g, w, y, marking, stack)) {
                     stack_push(x, stack);
                     return VRAI;
                 }
             }
         }
+        // ---------------------------------------
     }
     return FAUX;
 }
 
+// Fonction Principale (Wrapper d'affichage)
+void Recherche_recur(t_graph *g, t_vertex x, t_vertex y, FILE *out) {
+    // 1. Allocation marking
+    t_bool *marking = malloc(g->size * sizeof(t_bool));
+    assert(marking != NULL);
+    for (int i = 0; i < g->size; i++) marking[i] = FAUX;
+
+    // 2. Pile locale
+    t_stack stack = list_new();
+
+    // 3. Appel du calcul
+    if (Recherche_recur_f(g, x, y, marking, &stack)) {
+        // 4. Affichage
+        while (!stack_is_empty(&stack)) {
+            fprintf(out, "%d ", stack_pop(&stack));
+        }
+        fprintf(out, "\n");
+    } else {
+        fprintf(out, "Pas de chemin trouve.\n");
+    }
+
+    // 5. Nettoyage
+    free(marking);
+    // Note : stack est vide ici
+}
 
 // ======================================================================
-//                        PARTIE 3 : KOSARAJU (CFC)
+//                       PARTIE 3 : KOSARAJU (CFC)
 // ======================================================================
 
 void enum_cfc_kosaraju(t_graph *g, FILE *out){
